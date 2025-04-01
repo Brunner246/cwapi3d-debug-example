@@ -3,7 +3,7 @@ import platform
 from PyQt5.QtWidgets import QDialog, QWidget, QMainWindow
 from PyQt5.sip import voidptr
 
-from ui_debug_dialog import Ui_DebugDialog
+from ui.ui_debug_dialog import Ui_DebugDialog
 
 
 class DebugDialog(QDialog):
