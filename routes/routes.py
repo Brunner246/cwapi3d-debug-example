@@ -1,34 +1,44 @@
 # routes.py
-from typing import List, Optional
+from typing import Optional
+
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+
+from models.active_elements_response import ActiveElementsResponse
+from models.search_elements_response import SearchElementsResponse
 
 router = APIRouter(prefix="/api/v1")
 
+# see OPENAPI_DOCS via http://localhost:3030/docs
 
-# Models
-class ActiveElementsResponse(BaseModel):
-    count: int = Field(description="Number of active elements")
-    element_ids: List[int] = Field(description="List of active element IDs")
-    success: bool = Field(default=True, description="Operation success status")
-
-
-class SearchElementsResponse(BaseModel):
-    query: str = Field(description="The search query used")
-    count: int = Field(description="Number of matching elements")
-    element_ids: List[int] = Field(description="List of matching element IDs")
-    success: bool = Field(default=True, description="Operation success status")
-
-
-# Routes
 @router.get("/")
 async def root():
     return {"message": "Debug API is running"}
 
 
+@router.get("/cadwork/toggle-render-mode")
+async def toggle_render_mode():
+    import visualization_controller as vc
+    from models.render_state import RenderState
+
+    render_state = RenderState.get_instance()
+
+    if not render_state.is_wireframe:
+        vc.show_view_wireframe()
+        render_state.is_wireframe = True
+        current_mode = "wireframe"
+    else:
+        vc.show_view_shaded2()
+        render_state.is_wireframe = False
+        current_mode = "shaded2"
+
+    return {
+        "success": True,
+        "current_mode": current_mode
+    }
+
+
 @router.get("/debug/status")
 async def debug_status():
-    # Debug manager will be passed from main application
     from debug_manager import DebugManager
     debug = DebugManager()
     return {"debug_enabled": debug.debug_enabled}
